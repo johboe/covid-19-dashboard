@@ -1,7 +1,7 @@
 covid-19-dashboard
 ==============================
 
-Dynamic Dashboard of Covid-19 Data for the course "Enterprise Data Science". This project contains the ntoebooks for both delivery 3 and 4.
+Dynamic Dashboard of Covid-19 Data for the course "Enterprise Data Science". This project contains the notebooks for both delivery 3 and 4.
 
 Project Organization
 ------------
