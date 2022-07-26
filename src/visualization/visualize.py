@@ -59,8 +59,8 @@ def update_figure(countries_to_show, switch_state, show_doubling):
             df_plot=df_plot[['location','total_cases','total_cases_filtered','total_cases_DR','total_cases_filtered_DR','date', 'people_vaccinated_per_hundred']].groupby(['location','date']).agg(np.sum).reset_index()
         
         
-        traces.append(dict(x=df_plot.date,
-                             y=df_plot[show_doubling],
+        traces.append(dict(x=df_plot.date[60:],
+                             y=df_plot[show_doubling][60:],
                              name=country,
                              opacity=0.9,
                              line_width=2,
