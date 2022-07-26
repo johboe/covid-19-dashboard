@@ -17,25 +17,27 @@ countries = df_covid['location'].unique()
 app = dash.Dash()
 app.layout = html.Div([
     html.H1('Dynamic Covid-19 Dashboard'),
-    daq.BooleanSwitch(id='loglin_switch', on=False, label="Logarithmic scale", labelPosition="top"),
-    html.Label('This dynamic dashboard implements '),
-    html.Label('Select the countries to display:'),
+    html.Label(['This dynamic dashboard provides several statistics related to the Corona virus spread. It is possible to ',
+               'select between several countries and to show the confirmed total cases (once unfiltered and once with ',
+               'an applied smoothing filter) as well as the doubling rate (again unfiltered and filtered). Additionally, ',
+               'it is possible to show the vaccination rate.', html.Br(),
+               'The dashboard is programmed in a way that a full walkthrough from data gathering up to the visualization is ',
+               'possible with only one click.', html.Br(), html.Br()]),
+    html.H3('Select the countries to display'),
     doc.Dropdown(
         id = 'country_drop_down',
         options=[{'label': country, 'value': country} for country in countries],
         value=['Germany'],        # which are pre-selected
         multi=True
     ),
-     doc.Markdown('''
-        ## Select Timeline of confirmed COVID-19 cases or the approximated doubling time
-        '''),
+    html.H3('Show total cases, doubling rate or vaccination rate'),
 
 
     doc.Dropdown(
     id='doubling_time',
     options=[
-        {'label': 'Timeline Confirmed ', 'value': 'total_cases'},
-        {'label': 'Timeline Confirmed Filtered', 'value': 'total_cases_filtered'},
+        {'label': 'Timeline Total Cases ', 'value': 'total_cases'},
+        {'label': 'Timeline Total Cases Filtered', 'value': 'total_cases_filtered'},
         {'label': 'Timeline Doubling Rate', 'value': 'total_cases_DR'},
         {'label': 'Timeline Doubling Rate Filtered', 'value': 'total_cases_filtered_DR'},
         {'label': 'Percentage Of Fully Vaccinated People', 'value': 'people_vaccinated_per_hundred'},
@@ -43,6 +45,7 @@ app.layout = html.Div([
     value='total_cases',
     multi=False
     ),
+    daq.BooleanSwitch(id='loglin_switch', on=False, label="Logarithmic scale", labelPosition="top"),
     doc.Graph(figure=fig,id='main_window_slope')
 ])
 @app.callback(
@@ -50,6 +53,9 @@ app.layout = html.Div([
     [Input('country_drop_down', 'value'), Input('loglin_switch', 'on'), Input('doubling_time', 'value')])
 def update_figure(countries_to_show, switch_state, show_doubling):
     traces = []
+    ylabels = {"total_cases":"Total Cases of Infected People", "total_cases_filtered":"Total Cases of Infected People, Filtered",
+              "total_cases_DR":"Doubling Rate Cases", "total_cases_filtered_DR":"Doubling Rate Cases, Filtered",
+              "people_vaccinated_per_hundred": "Vaccination Rate in %"}
     for country in countries_to_show:
         df_plot=df_covid[df_covid['location']==country]
 
@@ -74,16 +80,16 @@ def update_figure(countries_to_show, switch_state, show_doubling):
         'layout': dict(width=1280,
                         height=720,
                         title="Covid-19 Cases",
-                        xaxis_title='Time',
-                        yaxis_title='Confirmed infected people (source: Our World in Data)',
-                      xaxis={'tickangle':-45,
-                            'nticks':20,
-                            'tickfont':dict(size=14,color='#7f7f7f'),
-                            },
-                      yaxis={
-                          'type': ('log' if switch_state else 'linear'),
-                          'range':('[0.1,100]' if switch_state else '[0,100000000]'),
-                      })
+                        xaxis={'tickangle':-45,
+                               'nticks':20,
+                               'tickfont':dict(size=14,color='#7f7f7f'),
+                               'title':'Time'
+                         },
+                         yaxis={
+                               'type': ('log' if switch_state else 'linear'),
+                               'range':('[0.1,100]' if switch_state else '[0,100000000]'),
+                               'title':(ylabels[show_doubling] + (' (Logarithmic)' if switch_state else '')),
+                          })
     }
 
 if __name__ == '__main__':

@@ -18,15 +18,18 @@ df_covid = pd.read_csv("../data/raw/covid_full_data.csv", sep=";")
 countries = df_covid['location'].unique()
 
 app.layout = html.Div([
-    html.H1('Dynamic Covid-19 Dashboard'),
-    daq.BooleanSwitch(id='loglin_switch', on=False, label="Logarithmic scale", labelPosition="top"),
-    html.Label('Select the countries to display:'),
+    html.H1('Dynamic Covid-19 Dashboard (SIR-Model)'),
+    doc.Markdown('This dashboard implements the SIR-Model (susceptible-infected-removed model). The model parameters beta '+
+                 'and gamma are fitted to math the real total cases to the total (summed) infected people of the SIR-model. '+
+                 'Particularly, the SIR-Model evaluates the difference between the population size N0 and the susceptible people.'),
+    html.H3('Select the countries to display'),
     doc.Dropdown(
         id = 'country_drop_down',
         options=[{'label': country, 'value': country} for country in countries],
         value=['Germany'],        # which are pre-selected
         multi=True
     ),
+    daq.BooleanSwitch(id='loglin_switch', on=False, label="Logarithmic scale", labelPosition="top"),
     doc.Graph(figure=fig_sir,id='main_window_sir')
 ])
 
@@ -46,9 +49,8 @@ def update_figure(countries_to_show, switch_state):
         I0=ydata[0]          # Initial value of infected people
         S0=N0-I0             # Initial value for sususceptible people
         R0=0                 # Initial value for recovered people
-        # the resulting curve has to be fitted
-        # free parameters are here beta and gamma
         
+        # fit gamma and betta
         popt, pcov = optimize.curve_fit(fit_odeint, t, ydata)       # popt contains fitted beta and gamma
         perr = np.sqrt(np.diag(pcov))
         print('standard deviation errors : ',str(perr), ' start infect:',ydata[0])
@@ -87,8 +89,7 @@ def update_figure(countries_to_show, switch_state):
                               },
                         yaxis={
                             'type': ('log' if switch_state else 'linear'),
-                            'range':('[0.1,100]' if switch_state else '[0,100000000]'),
-                            'title':'Summed Infections'
+                            'title':('Population Infected' + (' (Logarithmic)' if switch_state else '')),
                         })
     }
 
